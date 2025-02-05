@@ -59,11 +59,15 @@ void Response::post()
         it++;
     }
     body ="submited";
-    header = "HTTP/1.1 200 OK\r\nContent-Length: ";
-    std::stringstream ss;
-    ss << body.length();
-    std::string lengthStr = ss.str();
-    response = header + lengthStr + "\r\n\r\n" + body;
+    header = "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html\r\n"
+            "Content-Length: " + std::to_string(body.length()) + "\r\n"
+            "\r\n";
+    // std::stringstream ss;
+    // ss << body.length();
+    // std::string lengthStr = ss.str();
+    // response = header + lengthStr + "\r\n\r\n" + body;
+    response = header + body;
 }
 
 void Response::DELETE()
