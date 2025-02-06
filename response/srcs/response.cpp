@@ -2,6 +2,7 @@
 
 Response::Response(request r)
 {
+    // std::cout << "req" << std::endl;
     req = r;
     if (req.getReqLine().getMethod() == GET)
     {
@@ -16,7 +17,12 @@ Response::Response(request r)
 
 void Response::get()
 {
-    std::ifstream file("." + req.getReqLine().getReqTarget());
+    std::cout << "|" << req.getReqLine().getReqTarget() << "|" << std::endl;
+    std::ifstream file;
+    if (req.getReqLine().getReqTarget() == "/")
+        file.open("./index.html");
+    else
+        file.open("." + req.getReqLine().getReqTarget());
     if (!file.is_open())
     {
         std::ifstream file404("./404.html");
@@ -33,8 +39,7 @@ void Response::get()
         header = "HTTP/1.1 404 KO\r\nContent-Length: ";
         std::stringstream ss;
         ss << body.length();
-        response = header + ss.str(); + "\r\n\r\n" + body;
-        
+        response = header + ss.str() + "\r\n\r\n" + body;
         file404.close();
         return ;
     }
