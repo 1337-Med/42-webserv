@@ -19,6 +19,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             setcookie('user_color', '', time() - 3600, "/"); // Remove cookie
         }
     };
+    // Handle CGI POST
+    if (isset($_POST['cgi_action'])) {
+        $response = [
+            'status' => 'success',
+            'message' => 'CGI data received',
+            'data' => [
+                'name' => $_POST['name'] ?? '',
+                'username' => $_POST['username'] ?? ''
+            ]
+        ];
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
+}
+
+// Handle file upload
+if (isset($_FILES['file'])) {
+    $uploadDir = 'uploads/';
+    if (!is_dir($uploadDir)) mkdir($uploadDir);
+    
+    $fileName = basename($_FILES['file']['name']);
+    $targetPath = $uploadDir . $fileName;
+    
+    if (move_uploaded_file($_FILES['file']['tmp_name'], $targetPath)) {
+        $response = ['status' => 'success', 'message' => 'File uploaded successfully'];
+    } else {
+        $response = ['status' => 'error', 'message' => 'File upload failed'];
+    }
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
 }
 ?>
 
@@ -316,6 +348,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             <button type="submit" class="test-btn">Save Preferences</button>
         </form>
     </div>
+    <!-- Add these modals -->
+    <div id="cgiModal" class="preference-modal">
+        <form id="cgiForm">
+            <h3>Enter CGI Data</h3>
+            <div style="margin: 1rem 0;">
+                <label>Name:</label>
+                <input type="text" name="name" required>
+            </div>
+            <div style="margin: 1rem 0;">
+                <label>Username:</label>
+                <input type="text" name="username" required>
+            </div>
+            <button type="submit" class="test-btn">Submit</button>
+        </form>
+    </div>
+
+    <div id="deleteModal" class="preference-modal">
+        <form id="deleteForm">
+            <h3>Delete Item</h3>
+            <div style="margin: 1rem 0;">
+                <label>Item Name:</label>
+                <input type="text" name="item_name" required>
+            </div>
+            <button type="submit" class="test-btn">Delete</button>
+        </form>
+</div>
 
     <!-- Add this navigation header -->
     <nav class="main-header reveal">
@@ -415,24 +473,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         <h2 class="section-title reveal"  id="test">Test the Server</h2>
         <div class="test-buttons reveal">
             <button class="test-btn" style="<?php echo isset($_COOKIE['user_color']) ? 
-                'background: '.$_COOKIE['user_color'] : ''; ?>" onclick="testMethod('GET')">Test GET</button>
+                'background: '.$_COOKIE['user_color'] : ''; ?>" onclick="testMethod('GET')">GET</button>
             <button class="test-btn" style="<?php echo isset($_COOKIE['user_color']) ? 
-                'background: '.$_COOKIE['user_color'] : ''; ?>" onclick="testMethod('POST')">Test POST</button>
+                'background: '.$_COOKIE['user_color'] : ''; ?>" onclick="testMethod('POST')">POST</button>
             <button class="test-btn" style="<?php echo isset($_COOKIE['user_color']) ? 
-                'background: '.$_COOKIE['user_color'] : ''; ?>" onclick="testMethod('DELETE')">Test DELETE</button>
+                'background: '.$_COOKIE['user_color'] : ''; ?>" onclick="testMethod('DELETE')">DELETE</button>
             <button class="test-btn" style="<?php echo isset($_COOKIE['user_color']) ? 
                 'background: '.$_COOKIE['user_color'] : ''; ?>" onclick="document.getElementById('upload-form').style.display='block'">Upload</button>
             <button class="test-btn" style="<?php echo isset($_COOKIE['user_color']) ? 
                 'background: '.$_COOKIE['user_color'] : ''; ?>" onclick="testCGI()">Test CGI</button>
-            <button class="test-btn" style="<?php echo isset($_COOKIE['user_color']) ? 
-                'background: '.$_COOKIE['user_color'] : ''; ?>" onclick="testSession()">Test Session</button>
-            <button class="test-btn" style="<?php echo isset($_COOKIE['user_color']) ? 
-                'background: '.$_COOKIE['user_color'] : ''; ?>" onclick="testCookie()">Test Cookie</button>
             <!-- Upload Form -->
-               <form id="upload-form" class="upload-form reveal" action="/upload" method="POST" enctype="multipart/form-data">
-                       <input type="file" name="file">
-                       <button type="submit">Upload</button>
-                   </form>
+               <form id="upload-form" class="upload-form reveal" action="/" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="file">
+                    <button type="submit">Upload</button>
+                </form>
         <button class="test-btn" onclick="showPreferences()" 
                 style="<?php echo isset($_COOKIE['user_color']) ? 
                 'background: '.$_COOKIE['user_color'] : ''; ?>">
@@ -702,5 +756,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         }
     </script>
+
+<script>
+// Modified test functions
+function testMethod(method) {
+    switch(method) {
+        case 'GET':
+            window.location.href = 'get_page.html';
+            break;
+            
+        case 'DELETE':
+            showDeleteModal();
+            break;
+    }
+}
+
+function testCGI() {
+    showCGIModal();
+}
+
+// New modal handling functions
+function showCGIModal() {
+    const modal = document.getElementById('cgiModal');
+    modal.style.display = 'block';
+}
+
+function showDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.style.display = 'block';
+}
+
+// CGI Form handling
+document.getElementById('cgiForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('cgi_page.php', {
+            method: 'POST',
+            body: JSON.stringify(Object.fromEntries(formData)),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        alert(`CGI Response: ${data.message}\nData: ${JSON.stringify(data.data)}`);
+        document.getElementById('cgiModal').style.display = 'none';
+    } catch (error) {
+        alert('Error submitting CGI data');
+    }
+});
+
+// Delete Form handling
+document.getElementById('deleteForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const itemName = formData.get('item_name');
+    
+    try {
+        const response = await fetch(`${encodeURIComponent(itemName)}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            alert(`Item "${itemName}" deleted successfully`);
+        } else {
+            alert('Delete request failed');
+        }
+        document.getElementById('deleteModal').style.display = 'none';
+    } catch (error) {
+        alert('Error making delete request');
+    }
+});
+
+// File upload handling
+// document.getElementById('upload-form').addEventListener('submit', async (e) => {
+//     e.preventDefault();
+//     const formData = new FormData(e.target);
+    
+//     try {
+//         const response = await fetch('upload_handler.php', {
+//             method: 'POST',
+//             body: formData
+//         });
+        
+//         const data = await response.json();
+//         if (data.status === 'success') {
+//             alert('File uploaded successfully!');
+//         } else {
+//             alert('File upload failed: ' + data.message);
+//         }
+//         e.target.reset();
+//         e.target.style.display = 'none';
+//     } catch (error) {
+//         alert('Error uploading file');
+//     }
+// });
+</script>
 </body>
 </html>
