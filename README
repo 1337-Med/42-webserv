@@ -1,4 +1,4 @@
-#Sockets Documentation
+# Sockets Documentation
 
 ## What is a Socket?
 A socket is a way for programs to communicate with other programs using standard Unix file descriptors.
