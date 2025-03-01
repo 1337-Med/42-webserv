@@ -190,7 +190,10 @@ int select(int numfds, fd_set *readfds, fd_set *writefds,
 - Linux man pages (`man socket`, `man poll`, `man select`)
 
 ---
-**Author:** Your Name
+**Author:**
+ABDELLAH BOUNAB
+ANAS MEJDOUB
+NOURDINE BENYAHYA
 
 > _A detailed guide to understanding and working with sockets in networking._
 
