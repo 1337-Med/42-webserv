@@ -15,9 +15,9 @@ This program was developed by the **Abdellah, Anas and Nourddin** and covers mul
 
 1. **Clone the repository:**
 
-   ```bash
-   git clone <repository-url>
-   cd <repository-name>
+   ```sh
+   git clone https://github.com/1337-Med/42-webserv.git 42-webserv
+   cd 42-webserv
    ```
 
 2. **Build and run the program using Docker Compose:**
@@ -71,4 +71,3 @@ If you want to change the ports or serve your static website, you can modify the
 ---
 
 For more details, check the relevant documentation files in the repository.
-
