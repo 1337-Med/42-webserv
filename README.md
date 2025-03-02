@@ -22,7 +22,7 @@ This program was developed by the **Abdellah, Anas and Nourddin** and covers mul
 
 2. **Build and run the program using Docker Compose:**
 
-   ```sh
+   ```bash
    make
    ```
 
@@ -69,5 +69,6 @@ If you want to change the ports or serve your static website, you can modify the
 - **HTTP Documentation:** Found inside the `request` and `response` folders.
 
 ---
+
 
 For more details, check the relevant documentation files in the repository.
